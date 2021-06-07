@@ -79,9 +79,12 @@ func (b *base) Point() []byte {
 
 func (b *base) WriteTo(w io.Writer) (int64, error) {
 	buf := new(bytes.Buffer)
-	buf.WriteString(b.Name() + " ")
-	buf.WriteString(strconv.FormatFloat(b.Value(), 'f', -1, 64) + " ")
-	buf.WriteString(strconv.Itoa(int(b.Time())) + "\n")
+	buf.WriteString(b.Name())
+	buf.WriteString(" ")
+	buf.WriteString(strconv.FormatFloat(b.Value(), 'f', -1, 64))
+	buf.WriteString(" ")
+	buf.WriteString(strconv.Itoa(int(b.Time())))
+	buf.WriteString("\n")
 	return buf.WriteTo(w)
 }
 
