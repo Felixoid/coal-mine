@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -47,25 +48,29 @@ func TestNewGenerator(t *testing.T) {
 func TestNewExpand(t *testing.T) {
 	gg, err := NewExpand("const", "{metric,name}{1..2}{a..b}", 0, 0, 0, false, 0, 0)
 	assert.NoError(t, err)
-	assert.Len(t, gg, 8)
+	assert.Len(t, gg.Gens, 8)
+	assert.Equal(t, "{metric,name}{1..2}{a..b}", gg.Name)
+	assert.Equal(t, "const", gg.Type)
+	assert.True(t, !gg.Randomized)
 
 	gg, err = NewExpand("const", "", 0, 0, 0, false, 0, 0)
-	assert.NoError(t, err)
-	assert.Len(t, gg, 0)
+	assert.Error(t, err)
+	assert.Len(t, gg.Gens, 0)
 
-	gg, err = NewExpand("const", "metric.name", 0, 0, 0, false, 0, 0)
+	gg, err = NewExpand("const", "metric.name", 0, 0, 1, true, 0, 0)
 	assert.NoError(t, err)
-	assert.Len(t, gg, 1)
+	assert.Len(t, gg.Gens, 1)
+	assert.True(t, gg.Randomized)
 
 	gg, err = NewExpand("invalid", "metric.name", 0, 0, 0, false, 0, 0)
 	assert.Error(t, err)
-	assert.Len(t, gg, 0)
+	assert.Len(t, gg.Gens, 0)
 }
 
 func TestGeneratorsNext(t *testing.T) {
 	gg, err := NewExpand("const", "name{1..3}", 1, 2, 1, false, 0, 0)
 	assert.NoError(t, err)
-	c, ok := gg[1].(*Const)
+	c, ok := gg.Gens[1].(*Const)
 	assert.True(t, ok)
 	c.time = 3
 	// this Next success for [0], fails for [1] and skips [2] element
@@ -82,6 +87,28 @@ func TestGeneratorsWriteTo(t *testing.T) {
 	gg, err := NewExpand("const", "root.level{01..05}.node{01..10}", 0, 2, 1, false, 0, 0)
 	assert.NoError(t, err)
 	n, err := gg.WriteTo(buf)
+	assert.Error(t, err)
+	assert.Equal(t, int64(200), n)
+}
+
+func TestGeneratorsWriteAllTo(t *testing.T) {
+	buf := new(bytes.Buffer)
+	gens := Generators{}
+	n, err := gens.WriteAllTo(buf)
+	assert.ErrorIs(t, err, ErrEmptyGens)
+	assert.Zero(t, n)
+
+	limitedBuf := newBufWithLimit(200)
+	gens, err = NewExpand("const", "root.level{01..05}.node{01..10}", 1, 0, 1, false, 0, 0)
+	assert.NoError(t, err)
+	n, err = gens.WriteAllTo(limitedBuf)
+	assert.Error(t, err)
+	assert.Equal(t, int64(200), n)
+
+	limitedBuf = newBufWithLimit(200)
+	gens, err = NewExpand("const", "root.level{01..02}.node01", 0, 5, 1, false, 0, 0)
+	assert.NoError(t, err)
+	n, err = gens.WriteAllTo(limitedBuf)
 	assert.Error(t, err)
 	assert.Equal(t, int64(200), n)
 }
