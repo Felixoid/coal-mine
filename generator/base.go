@@ -120,6 +120,16 @@ func (b *base) Step() uint {
 	return b.step
 }
 
+// SetStop sets stop to a given value
+func (b *base) SetStop(stop uint) {
+	b.stop = stop
+}
+
+// Stop returns value of stop field for the generator
+func (b *base) Stop(stop uint) uint {
+	return b.stop
+}
+
 // Time returns the generator current time
 func (b *base) Time() uint {
 	return b.time

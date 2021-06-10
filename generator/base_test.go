@@ -81,3 +81,11 @@ func TestBasePoint(t *testing.T) {
 	b.time = 13
 	assert.Equal(t, []byte("metric.name 123.333 13\n"), b.Point())
 }
+
+func TestBaseStop(t *testing.T) {
+	b := base{}
+	for _, stop := range []uint{1, 2, 34, 5, 6, 7} {
+		b.SetStop(stop)
+		assert.Equal(t, stop, b.stop)
+	}
+}

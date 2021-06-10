@@ -24,6 +24,10 @@ type Generator interface {
 	Next() error
 	// Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'
 	Point() []byte
+	// SetStop sets the stop field for the Generator
+	SetStop(stop uint)
+	// Stop returns the current value for the stop field
+	Stop(stop uint) uint
 	// WriteTo writes the point []byte representation to a given io.Writer
 	WriteTo(io.Writer) (int64, error)
 }
@@ -32,6 +36,7 @@ type Generator interface {
 type Generators struct {
 	Name       string
 	Type       string
+	Step       uint
 	Randomized bool
 	Gens       []Generator
 }
@@ -64,6 +69,7 @@ func NewExpand(typeName, expandableName string, start, stop, step uint, randomiz
 	gens := Generators{
 		Name:       expandableName,
 		Type:       typeName,
+		Step:       step,
 		Randomized: randomizeStart,
 		Gens:       make([]Generator, len(names)),
 	}
@@ -97,6 +103,13 @@ func (gg Generators) Point() []byte {
 		g.WriteTo(buf)
 	}
 	return buf.Bytes()
+}
+
+// SetStop invokes the according method for each Generagor
+func (gg Generators) SetStop(stop uint) {
+	for _, g := range gg.Gens {
+		g.SetStop(stop)
+	}
 }
 
 // WriteTo writes point's []byte representation to io.Writer
