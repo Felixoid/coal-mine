@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"testing"
 
@@ -111,4 +112,35 @@ func TestGeneratorsWriteAllTo(t *testing.T) {
 	n, err = gens.WriteAllTo(limitedBuf)
 	assert.Error(t, err)
 	assert.Equal(t, int64(200), n)
+}
+
+func TestGeneratorsWriteAllToWithContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	buf := new(bytes.Buffer)
+	gens := Generators{}
+	n, err := gens.WriteAllToWithContext(ctx, buf)
+	assert.ErrorIs(t, err, ErrEmptyGens)
+	assert.Zero(t, n)
+
+	limitedBuf := newBufWithLimit(200)
+	gens, err = NewExpand("const", "root.level{01..05}.node{01..10}", 1, 0, 1, false, 0, 0)
+	assert.NoError(t, err)
+	n, err = gens.WriteAllToWithContext(ctx, limitedBuf)
+	assert.Error(t, err)
+	assert.Equal(t, int64(200), n)
+
+	limitedBuf = newBufWithLimit(200)
+	gens, err = NewExpand("const", "root.level{01..02}.node01", 0, 5, 1, false, 0, 0)
+	assert.NoError(t, err)
+	n, err = gens.WriteAllToWithContext(ctx, limitedBuf)
+	assert.Error(t, err)
+	assert.Equal(t, int64(200), n)
+
+	cancel()
+	buf.Reset()
+	gens, err = NewExpand("const", "root.level{01..02}.node01", 0, 5, 1, false, 0, 0)
+	assert.NoError(t, err)
+	n, err = gens.WriteAllToWithContext(ctx, limitedBuf)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Zero(t, n)
 }

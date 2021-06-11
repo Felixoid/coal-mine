@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -139,11 +140,39 @@ func (gg Generators) WriteAllTo(w io.Writer) (int64, error) {
 		}
 		return nil
 	}
-	if err := wr(); err != nil {
+	var err error
+	for ; err == nil; err = gg.Next() {
+		if err := wr(); err != nil {
+			return n, err
+		}
+	}
+	if !errors.Is(err, ErrGenOver) {
 		return n, err
 	}
+	return n, nil
+}
+
+// WriteAllToWithContext writes all points, but may be stopped by the passing a struct to a stop channel
+func (gg Generators) WriteAllToWithContext(ctx context.Context, w io.Writer) (int64, error) {
+	var add, n int64
+	buf := new(bytes.Buffer)
+	wr := func() error {
+		var err error
+		gg.WriteTo(buf)
+		add, err = buf.WriteTo(w)
+		n += add
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	var err error
-	for err = gg.Next(); err == nil; {
+	for ; err == nil; err = gg.Next() {
+		select {
+		case <-ctx.Done():
+			return n, ctx.Err()
+		default:
+		}
 		if err := wr(); err != nil {
 			return n, err
 		}
