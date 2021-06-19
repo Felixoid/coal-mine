@@ -126,7 +126,7 @@ func (b *base) SetStop(stop uint) {
 }
 
 // Stop returns value of stop field for the generator
-func (b *base) Stop(stop uint) uint {
+func (b *base) Stop() uint {
 	return b.stop
 }
 
