@@ -42,9 +42,9 @@ func (c *Custom) ToGenerators() (generator.Generators, error) {
 // Config is a general application config. Everything besides Generators can be set both from flags and config file.
 type Config struct {
 	Carbon  string   `toml:"carbon" json:"carbon" comment:"carbon-server address or '-' for STDOUT, should be set as '-', 'tcp://server:port' or 'udp://server:port'"`
-	Const   []string `toml:"const,omitempty" json:"const,omitempty" comment:"names for constant generators, braces are expanded like in shell"`
-	Counter []string `toml:"counter,omitempty" json:"counter,omitempty" comment:"names for counter generators, braces are expanded like in shell"`
-	Random  []string `toml:"random,omitempty" json:"random,omitempty" comment:"names for random generators, braces are expanded like in shell"`
+	Const   []string `toml:"const,omitempty" json:"const,omitempty" comment:"names for constant generators, braces are expanded like in shell\n values are generated with deviation around starting value"`
+	Counter []string `toml:"counter,omitempty" json:"counter,omitempty" comment:"names for counter generators, braces are expanded like in shell\n values are incremented by value with deviation, but not less then the previous value"`
+	Random  []string `toml:"random,omitempty" json:"random,omitempty" comment:"names for random generators, braces are expanded like in shell\n values are generated with deviation around the previous value"`
 	General `mapstructure:",squash"`
 	Custom  []Custom `toml:"custom,omitempty" json:"custom,omitempty" comment:"generators with custom parameters can be specified separately"`
 }
