@@ -16,10 +16,13 @@ func TestConfigExample(t *testing.T) {
 	body := `# carbon-server address or '-' for STDOUT, should be set as '-', 'tcp://server:port' or 'udp://server:port'
 carbon = ""
 # names for constant generators, braces are expanded like in shell
+# values are generated with deviation around starting value
 const = ["metric.const.example1", "metric.const.example{2..5}"]
 # names for counter generators, braces are expanded like in shell
+# values are incremented by value with deviation, but not less then the previous value
 counter = ["metric.counter.example1", "metric.counter.example{2..5}"]
 # names for random generators, braces are expanded like in shell
+# values are generated with deviation around the previous value
 random = ["metric.random.example{1,{2..5},.subdir}"]
 # from in graphite-web format, the local TZ is used
 from = "-2d"
