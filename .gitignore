@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+coal-mine
 
 # Test binary, built with `go test -c`
 *.test
