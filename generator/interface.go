@@ -13,6 +13,9 @@ import (
 // ErrGenOver shows the generation is over
 var ErrGenOver = fmt.Errorf("the last point reached")
 
+// ErrNewCounter means that the value and the deviation are meaningless
+var ErrNewCounter = fmt.Errorf("value and deviation are meaningless")
+
 // ErrEmptyGens represents that there are no Generators
 var ErrEmptyGens = fmt.Errorf("no Generators")
 
@@ -52,7 +55,7 @@ func New(typeName, name string, start, stop, step uint, randomizeStart bool, val
 	case ConstType:
 		return NewConst(name, start, stop, step, randomizeStart, value, deviation), nil
 	case CounterType:
-		return NewCounter(name, start, stop, step, randomizeStart, value, deviation), nil
+		return NewCounter(name, start, stop, step, randomizeStart, value, deviation)
 	case RandomType:
 		return NewRandom(name, start, stop, step, randomizeStart, value, deviation), nil
 	}
