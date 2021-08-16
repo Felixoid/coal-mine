@@ -15,7 +15,7 @@ type Counter struct {
 // Possibly it can randomize values around increment.
 // When deviation is set, it the next value won't be less then previous.
 func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) (*Counter, error) {
-	if value < 0 && math.Abs(value) < math.Abs(deviation) {
+	if value < 0 && math.Abs(value) <= math.Abs(deviation) {
 		return nil, ErrNewCounter
 	}
 	c := &Counter{
