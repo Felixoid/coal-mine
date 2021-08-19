@@ -36,10 +36,9 @@ func NewCounter(name string, start, stop, step uint, randomizeStart bool, value,
 
 // Next sets value and time for the next point
 func (c *Counter) Next() error {
-	if c.time > c.stop {
+	if c.getNextCommon() != nil {
 		return ErrGenOver
 	}
-	c.time += c.step
 	increment := c.increment
 	if c.Deviation() != 0 {
 		increment = c.increment + c.Deviation()*(1-rand.Float64()*2)
