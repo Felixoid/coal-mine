@@ -59,6 +59,14 @@ func GetType(typeName string) (Type, error) {
 	return t, nil
 }
 
+func (b *base) getNextCommon() error {
+	if b.time > b.stop {
+		return ErrGenOver
+	}
+	b.time += b.step
+	return nil
+}
+
 type base struct {
 	name          string
 	generatorType Type
