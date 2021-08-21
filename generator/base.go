@@ -59,9 +59,9 @@ func GetType(typeName string) (Type, error) {
 	return t, nil
 }
 
-func (b *base) getNextCommon() error {
+func (b *base) getTime() error {
 	if b.time > b.stop {
-		return ErrGenOver
+		return fmt.Errorf("the last point reached")
 	}
 	b.time += b.step
 	return nil

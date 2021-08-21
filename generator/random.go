@@ -26,7 +26,7 @@ func NewRandom(name string, start, stop, step uint, randomizeStart bool, value, 
 
 // Next sets value and time for the next point
 func (r *Random) Next() error {
-	if r.getNextCommon() != nil {
+	if r.getTime() != nil {
 		return ErrGenOver
 	}
 	if r.Deviation() != 0 {
