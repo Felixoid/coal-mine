@@ -30,8 +30,9 @@ func NewConst(name string, start, stop, step uint, randomizeStart bool, value, d
 
 // Next sets value and time for the next point
 func (c *Const) Next() error {
-	if c.getTime() != nil {
-		return ErrGenOver
+	err := c.nextTime()
+	if err != nil {
+		return err
 	}
 	c.value = c.constant
 	if c.Deviation() != 0 {
