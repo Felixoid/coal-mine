@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
