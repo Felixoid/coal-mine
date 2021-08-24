@@ -59,7 +59,7 @@ func GetType(typeName string) (Type, error) {
 	return t, nil
 }
 
-func (b *base) getTime() error {
+func (b *base) nextTime() error {
 	if b.time > b.stop {
 		return fmt.Errorf("the last point reached")
 	}
