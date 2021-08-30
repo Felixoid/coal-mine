@@ -61,7 +61,7 @@ func GetType(typeName string) (Type, error) {
 
 func (b *base) nextTime() error {
 	if b.time > b.stop {
-		return ErrNewCounter
+		return ErrGenOver
 	}
 	b.time += b.step
 	return nil
