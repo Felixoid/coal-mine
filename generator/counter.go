@@ -1,6 +1,10 @@
 package generator
 
-import "math/rand"
+import (
+	"fmt"
+	"math"
+	"math/rand"
+)
 
 // Counter represents generator for growing-up metrics
 type Counter struct {
@@ -11,7 +15,10 @@ type Counter struct {
 // NewCounter returns new generator for growing points. Starting value is an increment as well.
 // Possibly it can randomize values around increment.
 // When deviation is set, it the next value won't be less then previous.
-func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) *Counter {
+func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) (*Counter, error) {
+	if value < 0 && math.Abs(value) <= math.Abs(deviation) {
+		return nil, fmt.Errorf("%w: with negative value deviation must be greater than value", ErrNewCounter)
+	}
 	c := &Counter{
 		base: base{
 			name:          name,
@@ -25,15 +32,15 @@ func NewCounter(name string, start, stop, step uint, randomizeStart bool, value,
 		increment: value,
 	}
 	c.RandomizeStart(randomizeStart)
-	return c
+	return c, nil
 }
 
 // Next sets value and time for the next point
 func (c *Counter) Next() error {
-	if c.time > c.stop {
-		return ErrGenOver
+	err := c.nextTime()
+	if err != nil {
+		return err
 	}
-	c.time += c.step
 	increment := c.increment
 	if c.Deviation() != 0 {
 		increment = c.increment + c.Deviation()*(1-rand.Float64()*2)

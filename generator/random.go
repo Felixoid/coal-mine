@@ -26,10 +26,10 @@ func NewRandom(name string, start, stop, step uint, randomizeStart bool, value, 
 
 // Next sets value and time for the next point
 func (r *Random) Next() error {
-	if r.time > r.stop {
-		return ErrGenOver
+	err := r.nextTime()
+	if err != nil {
+		return err
 	}
-	r.time += r.step
 	if r.Deviation() != 0 {
 		r.value += r.Deviation() * (1 - rand.Float64()*2)
 	}
