@@ -69,12 +69,21 @@ func (b *base) nextTime() error {
 
 // Probability returns true if doble b.probability more than 100
 func (b *base) checkProbability() bool {
+	if b.probability.start == 100 {
+		return true
+	}
 	b.probability.current = b.probability.current + b.probability.start
 	if b.probability.current >= 100 {
 		b.probability.current -= 100
 		return true
 	}
 	return false
+}
+func probabilityIsCorrect(probabilityStart uint8) bool {
+	if probabilityStart > 100 || probabilityStart < 1 {
+		return false
+	}
+	return true
 }
 
 type base struct {
@@ -94,6 +103,11 @@ type Probability struct {
 	current uint8
 }
 
+// Randomize first current
+func NewProbability() uint8 {
+	return uint8(rand.Intn(100))
+}
+
 // Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'
 func (b *base) Point() []byte {
 	buf := new(bytes.Buffer)
@@ -102,7 +116,7 @@ func (b *base) Point() []byte {
 }
 
 func (b *base) WriteTo(w io.Writer) (int64, error) {
-	if b.checkProbability() {
+	if !b.checkProbability() {
 		return 0, nil
 	}
 	buf := new(bytes.Buffer)

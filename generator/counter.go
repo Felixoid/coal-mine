@@ -19,7 +19,7 @@ func NewCounter(name string, start, stop, step uint, randomizeStart bool, value,
 	if value < 0 && math.Abs(value) <= math.Abs(deviation) {
 		return nil, fmt.Errorf("%w: with negative value deviation must be greater than value", ErrNewCounter)
 	}
-	if probabilityStart > 100 || probabilityStart < 1 {
+	if !probabilityIsCorrect(probabilityStart) {
 		return nil, ErrProbabilityStart
 	}
 	c := &Counter{
@@ -31,6 +31,9 @@ func NewCounter(name string, start, stop, step uint, randomizeStart bool, value,
 			step:          step,
 			value:         value,
 			deviation:     deviation,
+			probability: Probability{
+				start:   probabilityStart,
+				current: NewProbability()},
 		},
 		increment: value,
 	}
