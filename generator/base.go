@@ -67,6 +67,16 @@ func (b *base) nextTime() error {
 	return nil
 }
 
+// Probability returns true if doble b.probability more than 100
+func (b *base) checkProbability() bool {
+	b.probability.current = b.probability.current + b.probability.start
+	if b.probability.current >= 100 {
+		b.probability.current -= 100
+		return true
+	}
+	return false
+}
+
 type base struct {
 	name          string
 	generatorType Type
@@ -76,6 +86,12 @@ type base struct {
 	time          uint
 	value         float64
 	deviation     float64
+	probability   Probability
+}
+
+type Probability struct {
+	start   uint8
+	current uint8
 }
 
 // Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'
@@ -86,6 +102,9 @@ func (b *base) Point() []byte {
 }
 
 func (b *base) WriteTo(w io.Writer) (int64, error) {
+	if b.checkProbability() {
+		return 0, nil
+	}
 	buf := new(bytes.Buffer)
 	buf.WriteString(b.Name())
 	buf.WriteString(" ")

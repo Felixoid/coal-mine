@@ -15,9 +15,12 @@ type Counter struct {
 // NewCounter returns new generator for growing points. Starting value is an increment as well.
 // Possibly it can randomize values around increment.
 // When deviation is set, it the next value won't be less then previous.
-func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) (*Counter, error) {
+func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64, probabilityStart uint8) (*Counter, error) {
 	if value < 0 && math.Abs(value) <= math.Abs(deviation) {
 		return nil, fmt.Errorf("%w: with negative value deviation must be greater than value", ErrNewCounter)
+	}
+	if probabilityStart > 100 || probabilityStart < 1 {
+		return nil, ErrProbabilityStart
 	}
 	c := &Counter{
 		base: base{

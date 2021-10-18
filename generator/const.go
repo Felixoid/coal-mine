@@ -11,7 +11,10 @@ type Const struct {
 }
 
 // NewConst returns new generator for constant points. Possibly it can randomize values around constant.
-func NewConst(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) *Const {
+func NewConst(name string, start, stop, step uint, randomizeStart bool, value, deviation float64, probabilityStart uint8) (*Const, error) {
+	if !probabilityIsCorrect(probabilityStart) {
+		return nil, ErrProbabilityStart
+	}
 	c := &Const{
 		base: base{
 			name:          name,
@@ -21,11 +24,14 @@ func NewConst(name string, start, stop, step uint, randomizeStart bool, value, d
 			step:          step,
 			value:         value,
 			deviation:     deviation,
+			probability: Probability{ // use NewProbability
+				start:   probabilityStart,
+				current: NewProbability()},
 		},
 		constant: value,
 	}
 	c.RandomizeStart(randomizeStart)
-	return c
+	return c, nil
 }
 
 // Next sets value and time for the next point

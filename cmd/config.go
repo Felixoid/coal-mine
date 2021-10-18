@@ -17,14 +17,15 @@ import (
 
 // General is the general part of configs
 type General struct {
-	From      string `toml:"from,omitempty" json:"from,omitempty" comment:"from in graphite-web format, the local TZ is used"`
-	start     uint
-	Until     string `toml:"until,omitempty" json:"until,omitempty" comment:"until in graphite-web format, the local TZ is used"`
-	stop      uint
-	Step      uint    `toml:"step,omitempty" json:"step,omitempty" comment:"step in seconds"`
-	Randomize bool    `toml:"randomize" json:"randomize" comment:"randomize starting time with [0,step)"`
-	Value     float64 `toml:"value,omitempty" json:"value,omitempty" comment:"first value for all generators"`
-	Deviation float64 `toml:"deviation,omitempty" json:"deviation,omitempty" comment:"deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous"`
+	From        string `toml:"from,omitempty" json:"from,omitempty" comment:"from in graphite-web format, the local TZ is used"`
+	start       uint
+	Until       string `toml:"until,omitempty" json:"until,omitempty" comment:"until in graphite-web format, the local TZ is used"`
+	stop        uint
+	Step        uint    `toml:"step,omitempty" json:"step,omitempty" comment:"step in seconds"`
+	Randomize   bool    `toml:"randomize" json:"randomize" comment:"randomize starting time with [0,step)"`
+	Value       float64 `toml:"value,omitempty" json:"value,omitempty" comment:"first value for all generators"`
+	Deviation   float64 `toml:"deviation,omitempty" json:"deviation,omitempty" comment:"deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous"`
+	Probability uint8
 }
 
 // Custom is a config for a generators with special parameters. Is readed only from a config file.
@@ -36,7 +37,7 @@ type Custom struct {
 
 // ToGenerators returns generator.Generators for a given custom config
 func (c *Custom) ToGenerators() (generator.Generators, error) {
-	return generator.NewExpand(c.Type, c.Name, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+	return generator.NewExpand(c.Type, c.Name, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation, c.Probability)
 }
 
 // Config is a general application config. Everything besides Generators can be set both from flags and config file.
@@ -75,21 +76,21 @@ func (c *Config) ResetStartStop() {
 func (c *Config) ToGenerators() ([]generator.Generators, error) {
 	result := make([]generator.Generators, 0, len(c.Custom)+3)
 	for _, n := range c.Const {
-		gen, err := generator.NewExpand("const", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("const", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation, c.Probability)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new constant generators: %w", err)
 		}
 		result = append(result, gen)
 	}
 	for _, n := range c.Counter {
-		gen, err := generator.NewExpand("counter", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("counter", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation, c.Probability)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new counter generators: %w", err)
 		}
 		result = append(result, gen)
 	}
 	for _, n := range c.Random {
-		gen, err := generator.NewExpand("random", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("random", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation, c.Probability)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new random generators: %w", err)
 		}

@@ -22,6 +22,9 @@ var ErrEmptyGens = fmt.Errorf("no Generators")
 // ErrNotImplemented represents the generator is not implemented yet
 var ErrNotImplemented = fmt.Errorf("generator type is not implemented")
 
+// ErrProbabilityStart is uncorrect
+var ErrProbabilityStart = fmt.Errorf("Probability start is uncorrect")
+
 // Generator represents
 type Generator interface {
 	// Next calculates next value of generator and returns ErrGenOver when the latest point is reached
@@ -46,18 +49,18 @@ type Generators struct {
 }
 
 // New returns new Generator for given parameters
-func New(typeName, name string, start, stop, step uint, randomizeStart bool, value, deviation float64) (Generator, error) {
+func New(typeName, name string, start, stop, step uint, randomizeStart bool, value, deviation float64, probabilityStart uint8) (Generator, error) {
 	gt, err := GetType(typeName)
 	if err != nil {
 		return nil, err
 	}
 	switch gt {
 	case ConstType:
-		return NewConst(name, start, stop, step, randomizeStart, value, deviation), nil
+		return NewConst(name, start, stop, step, randomizeStart, value, deviation, probabilityStart)
 	case CounterType:
-		return NewCounter(name, start, stop, step, randomizeStart, value, deviation)
+		return NewCounter(name, start, stop, step, randomizeStart, value, deviation, probabilityStart)
 	case RandomType:
-		return NewRandom(name, start, stop, step, randomizeStart, value, deviation), nil
+		return NewRandom(name, start, stop, step, randomizeStart, value, deviation, probabilityStart)
 	}
 	return nil, fmt.Errorf("%w: %s", ErrNotImplemented, typeName)
 }
@@ -65,7 +68,7 @@ func New(typeName, name string, start, stop, step uint, randomizeStart bool, val
 // NewExpand expands name as shell expansion
 // (e.g. metric.name{1..3} will produce 3 metrics metric.name1, metric.name2 and metric.name3)
 // and creates slice of Generator with names.
-func NewExpand(typeName, expandableName string, start, stop, step uint, randomizeStart bool, value, deviation float64) (Generators, error) {
+func NewExpand(typeName, expandableName string, start, stop, step uint, randomizeStart bool, value, deviation float64, probabilityStrat uint8) (Generators, error) {
 	names := braxpansion.ExpandString(expandableName)
 	if len(names) == 0 {
 		return Generators{}, ErrEmptyGens
@@ -78,7 +81,7 @@ func NewExpand(typeName, expandableName string, start, stop, step uint, randomiz
 		gens:       make([]Generator, len(names)),
 	}
 	for i, name := range names {
-		g, err := New(typeName, name, start, stop, step, randomizeStart, value, deviation)
+		g, err := New(typeName, name, start, stop, step, randomizeStart, value, deviation, probabilityStrat)
 		if err != nil {
 			return Generators{}, err
 		}
