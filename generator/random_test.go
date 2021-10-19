@@ -18,6 +18,7 @@ func TestRandomNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	assert.Equal(t, expected, c)
 	randomized := false

@@ -104,8 +104,11 @@ type Probability struct {
 }
 
 // Randomize first current
-func NewProbability() uint8 {
-	return uint8(rand.Intn(100))
+func newProbability(probabilityStart uint8) Probability {
+
+	return Probability{
+		start:   probabilityStart,
+		current: uint8(rand.Intn(100))}
 }
 
 // Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'

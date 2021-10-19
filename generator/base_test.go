@@ -79,6 +79,7 @@ func TestBasePoint(t *testing.T) {
 	b.name = "metric.name"
 	b.value = 123.333
 	b.time = 13
+	b.probability.current = 100
 	assert.Equal(t, []byte("metric.name 123.333 13\n"), b.Point())
 }
 

@@ -31,9 +31,7 @@ func NewCounter(name string, start, stop, step uint, randomizeStart bool, value,
 			step:          step,
 			value:         value,
 			deviation:     deviation,
-			probability: Probability{
-				start:   probabilityStart,
-				current: NewProbability()},
+			probability:   newProbability(probabilityStart),
 		},
 		increment: value,
 	}

@@ -24,9 +24,7 @@ func NewConst(name string, start, stop, step uint, randomizeStart bool, value, d
 			step:          step,
 			value:         value,
 			deviation:     deviation,
-			probability: Probability{ // use NewProbability
-				start:   probabilityStart,
-				current: NewProbability()},
+			probability:   newProbability(probabilityStart),
 		},
 		constant: value,
 	}

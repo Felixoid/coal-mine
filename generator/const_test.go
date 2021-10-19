@@ -18,6 +18,7 @@ func TestConstNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	expected.constant = 30
 	assert.Equal(t, expected, c)

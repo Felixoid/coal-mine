@@ -36,6 +36,7 @@ randomize = true
 value = 333.0
 # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
 deviation = 15.15
+Probability = 0
 
 [[custom]]
  # names for generator, braces are expanded like in shell
@@ -54,6 +55,7 @@ deviation = 15.15
  value = 1000.0
  # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
  deviation = 123.456
+ Probability = 0
 
 [[custom]]
  # names for generator, braces are expanded like in shell
@@ -72,6 +74,7 @@ deviation = 15.15
  value = 100.0
  # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
  deviation = 123.456
+ Probability = 0
 `
 	assert.Equal(t, body, buf.String())
 }

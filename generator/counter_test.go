@@ -18,6 +18,7 @@ func TestCounterNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	expected.increment = 30
 	assert.NoError(t, e)
