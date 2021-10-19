@@ -79,6 +79,7 @@ func TestBasePoint(t *testing.T) {
 	b.name = "metric.name"
 	b.value = 123.333
 	b.time = 13
+	b.probability.current = 100
 	assert.Equal(t, []byte("metric.name 123.333 13\n"), b.Point())
 }
 
@@ -87,5 +88,20 @@ func TestBaseStop(t *testing.T) {
 	for _, stop := range []uint{1, 2, 34, 5, 6, 7} {
 		b.SetStop(stop)
 		assert.Equal(t, stop, b.stop)
+	}
+}
+
+func TestBaseCheckProbability(t *testing.T) {
+	b := base{}
+	for _, iter := range []uint8{10, 20, 4, 5, 36, 49, 99} {
+		b.probability.current = 0
+		b.probability.start = iter
+		assert.False(t, b.checkProbability())
+	}
+	for _, iter := range []uint8{99, 50, 56, 89, 65, 67} {
+		b.probability.current = iter
+		b.probability.start = iter
+		assert.True(t, b.checkProbability())
+		assert.Equal(t, b.probability.current, 2*iter-100)
 	}
 }

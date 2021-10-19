@@ -7,7 +7,7 @@ import (
 )
 
 func TestConstNew(t *testing.T) {
-	c := NewConst("metric.name", 12, 15, 1, false, 30, 0)
+	var c, _ = NewConst("metric.name", 12, 15, 1, false, 30, 0, 100)
 	expected := &Const{}
 	expected.base = base{
 		name:          "metric.name",
@@ -18,12 +18,13 @@ func TestConstNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	expected.constant = 30
 	assert.Equal(t, expected, c)
 	randomized := false
 	for i := 0; i < 100; i++ {
-		c = NewConst("metric.name", 12, 15, 100, true, 30, 0)
+		c, _ = NewConst("metric.name", 12, 15, 100, true, 30, 0, 100)
 		if c.Time() != 12 {
 			randomized = true
 			break
