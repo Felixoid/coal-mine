@@ -17,7 +17,7 @@ type Counter struct {
 // When deviation is set, it the next value won't be less then previous.
 func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64) (*Counter, error) {
 	if value < 0 && math.Abs(deviation) <= math.Abs(value) {
-		return nil, fmt.Errorf("%w: with negative value deviation must be greater than value", ErrNewCounter)
+		return nil, fmt.Errorf("%w: with negative value deviation (%f) must be greater than value (%f)", ErrNewCounter, deviation, value)
 	}
 	c := &Counter{
 		base: base{

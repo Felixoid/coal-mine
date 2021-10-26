@@ -48,11 +48,11 @@ func onlineGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
 	}
 
 	ggg, err := config.ToGenerators()
-	if len(ggg) == 0 {
-		return nil
-	}
 	if err != nil {
 		return err
+	}
+	if len(ggg) == 0 {
+		return nil
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
