@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-
-	"github.com/Felixoid/braxpansion"
 )
 
 // ErrGenOver shows the generation is over
@@ -69,8 +67,10 @@ func New(typeName, name string, start, stop, step uint, randomizeStart bool, val
 // NewExpand expands name as shell expansion
 // (e.g. metric.name{1..3} will produce 3 metrics metric.name1, metric.name2 and metric.name3)
 // and creates slice of Generator with names.
-func NewExpand(typeName, expandableName string, start, stop, step uint, randomizeStart bool, value, deviation float64) (Generators, error) {
-	names := braxpansion.ExpandString(expandableName)
+func NewExpand(typeName, expandableName string, variables map[string]string,
+	start, stop, step uint, randomizeStart bool, value, deviation float64) (Generators, error) {
+
+	names := expandString(expandableName, variables)
 	if len(names) == 0 {
 		return Generators{}, ErrEmptyGens
 	}

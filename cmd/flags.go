@@ -1,9 +1,55 @@
 package cmd
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+type stringMap map[string]string
+
+func (u stringMap) Set(value string) error {
+	k, v, ok := strings.Cut(value, "=")
+	if !ok {
+		return errors.New("invalid variable '" + value + "', must be with = delimiter")
+	}
+	if _, ok := u[v]; ok {
+		return errors.New("duplicate variable '" + k + "'")
+	}
+	u[k] = v
+	return nil
+}
+
+func (u stringMap) String() string {
+	if len(u) == 0 {
+		return "[]"
+	}
+	var buf strings.Builder
+	first := true
+	buf.WriteByte('[')
+	for k, v := range u {
+		buf.WriteByte('\'')
+		buf.WriteString(k)
+		buf.WriteByte('=')
+		buf.WriteString(v)
+		buf.WriteByte('\'')
+		if first {
+			first = false
+		} else {
+			buf.WriteByte(',')
+		}
+	}
+	buf.WriteByte(']')
+	return buf.String()
+}
+
+func (u stringMap) Type() string {
+	return "map[string]string"
+}
+
+var variables = make(stringMap)
 
 func commonFlags(cmd *cobra.Command) {
 	f := cmd.Flags()
@@ -30,7 +76,7 @@ func metricsFlags(cmd *cobra.Command) {
 	f.StringArray("counter", []string{}, "counter generators")
 	f.StringArray("random", []string{}, "random generators")
 	f.Bool("randomize", viper.GetBool("randomize"), "toggle if starting point of generators should be randomized")
-
+	f.Var(variables, "var", "variables for expand")
 }
 
 func bindMetricsFlags(cmd *cobra.Command) {
@@ -39,4 +85,5 @@ func bindMetricsFlags(cmd *cobra.Command) {
 	viper.BindPFlag("counter", f.Lookup("counter"))
 	viper.BindPFlag("random", f.Lookup("random"))
 	viper.BindPFlag("randomize", f.Lookup("randomize"))
+	viper.BindPFlag("var", f.Lookup("var"))
 }
