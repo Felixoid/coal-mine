@@ -103,9 +103,15 @@ func generation(cmd *cobra.Command, args []string) error {
 	wg := sync.WaitGroup{}
 	wg.Add(len(ggg))
 
-	write := func(gg generator.Generators) {
+	// preallocate buffers
+	buf := make([][]byte, len(ggg))
+	for i := 0; i < len(ggg); i++ {
+		buf[i] = make([]byte, 0, 256)
+	}
+
+	write := func(gg generator.Generators, buf *[]byte) {
 		defer wg.Done()
-		n, err := gg.WriteAllToWithContext(ctx, writer)
+		n, err := gg.WriteAllToWithContext(ctx, writer, buf)
 		if err != nil {
 			errs <- fmt.Errorf("error while sending metrics, %d bytes sent: %w", n, err)
 		}
@@ -113,8 +119,8 @@ func generation(cmd *cobra.Command, args []string) error {
 
 	wait := make(chan struct{})
 	go func() {
-		for _, gg := range ggg {
-			go write(gg)
+		for i, gg := range ggg {
+			go write(gg, &buf[i])
 		}
 		wg.Wait()
 		close(wait)

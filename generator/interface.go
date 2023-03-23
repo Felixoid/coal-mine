@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-
-	"github.com/Felixoid/braxpansion"
 )
 
 // ErrGenOver shows the generation is over
@@ -26,6 +24,8 @@ var ErrNotImplemented = fmt.Errorf("generator type is not implemented")
 type Generator interface {
 	// Next calculates next value of generator and returns ErrGenOver when the latest point is reached
 	Next() error
+	// Name return metric name
+	Name() string
 	// Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'
 	Point() []byte
 	// SetStop sets the stop field for the Generator
@@ -34,6 +34,8 @@ type Generator interface {
 	Stop() uint
 	// WriteTo writes the point []byte representation to a given io.Writer
 	WriteTo(io.Writer) (int64, error)
+	// Append append the point []byte representation to a given []byte slice
+	Append([]byte) []byte
 }
 
 // Generators is a slice of Generator. Next() and Point() works accordingly
@@ -65,8 +67,10 @@ func New(typeName, name string, start, stop, step uint, randomizeStart bool, val
 // NewExpand expands name as shell expansion
 // (e.g. metric.name{1..3} will produce 3 metrics metric.name1, metric.name2 and metric.name3)
 // and creates slice of Generator with names.
-func NewExpand(typeName, expandableName string, start, stop, step uint, randomizeStart bool, value, deviation float64) (Generators, error) {
-	names := braxpansion.ExpandString(expandableName)
+func NewExpand(typeName, expandableName string, variables map[string]string,
+	start, stop, step uint, randomizeStart bool, value, deviation float64) (Generators, error) {
+
+	names := expandString(expandableName, variables)
 	if len(names) == 0 {
 		return Generators{}, ErrEmptyGens
 	}
@@ -136,12 +140,21 @@ func (gg *Generators) Step() uint {
 	return gg.step
 }
 
-// WriteTo writes point's []byte representation to io.Writer
-func (gg *Generators) WriteTo(w io.Writer) (n int64, err error) {
-	var add int64
+// Append append point's []byte representation to []byte slice
+func (gg *Generators) Append(buf []byte) []byte {
 	for _, g := range gg.gens {
-		add, err = g.WriteTo(w)
-		n += add
+		buf = g.Append(buf)
+	}
+	return buf
+}
+
+// WriteTo writes point's []byte representation to io.Writer
+func (gg *Generators) WriteTo(w io.Writer, buf *[]byte) (n int64, err error) {
+	var add int
+	for _, g := range gg.gens {
+		*buf = g.Append((*buf)[:0])
+		add, err = w.Write(*buf)
+		n += int64(add)
 		if err != nil {
 			return
 		}
@@ -150,22 +163,13 @@ func (gg *Generators) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // WriteAllTo writes all points for Generators to io.Writer
-func (gg *Generators) WriteAllTo(w io.Writer) (int64, error) {
-	var add, n int64
-	buf := new(bytes.Buffer)
-	wr := func() error {
-		var err error
-		gg.WriteTo(buf)
-		add, err = buf.WriteTo(w)
-		n += add
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+func (gg *Generators) WriteAllTo(w io.Writer, buf *[]byte) (int64, error) {
+	var n int64
 	var err error
 	for ; err == nil; err = gg.Next() {
-		if err := wr(); err != nil {
+		add, err := gg.WriteTo(w, buf)
+		n += add
+		if err != nil {
 			return n, err
 		}
 	}
@@ -176,18 +180,14 @@ func (gg *Generators) WriteAllTo(w io.Writer) (int64, error) {
 }
 
 // WriteAllToWithContext writes all points, but may be stopped by the passing a struct to a stop channel
-func (gg *Generators) WriteAllToWithContext(ctx context.Context, w io.Writer) (int64, error) {
-	var add, n int64
-	buf := new(bytes.Buffer)
+func (gg *Generators) WriteAllToWithContext(ctx context.Context, w io.Writer, buf *[]byte) (int64, error) {
+	var (
+		n int64
+	)
 	wr := func() error {
-		var err error
-		gg.WriteTo(buf)
-		add, err = buf.WriteTo(w)
+		add, err := gg.WriteTo(w, buf)
 		n += add
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	}
 	var err error
 	for ; err == nil; err = gg.Next() {

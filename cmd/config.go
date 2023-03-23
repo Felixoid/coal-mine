@@ -36,7 +36,7 @@ type Custom struct {
 
 // ToGenerators returns generator.Generators for a given custom config
 func (c *Custom) ToGenerators() (generator.Generators, error) {
-	return generator.NewExpand(c.Type, c.Name, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+	return generator.NewExpand(c.Type, c.Name, variables, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
 }
 
 // Config is a general application config. Everything besides Generators can be set both from flags and config file.
@@ -75,21 +75,21 @@ func (c *Config) ResetStartStop() {
 func (c *Config) ToGenerators() ([]generator.Generators, error) {
 	result := make([]generator.Generators, 0, len(c.Custom)+3)
 	for _, n := range c.Const {
-		gen, err := generator.NewExpand("const", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("const", n, variables, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new constant generators: %w", err)
 		}
 		result = append(result, gen)
 	}
 	for _, n := range c.Counter {
-		gen, err := generator.NewExpand("counter", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("counter", n, variables, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new counter generators: %w", err)
 		}
 		result = append(result, gen)
 	}
 	for _, n := range c.Random {
-		gen, err := generator.NewExpand("random", n, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
+		gen, err := generator.NewExpand("random", n, variables, c.start, c.stop, c.Step, c.Randomize, c.Value, c.Deviation)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create new random generators: %w", err)
 		}

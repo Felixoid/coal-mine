@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"math/rand"
@@ -80,20 +79,26 @@ type base struct {
 
 // Point returns the metric in carbon format, e.g. 'metric.name 123.33 1234567890\n'
 func (b *base) Point() []byte {
-	buf := new(bytes.Buffer)
-	b.WriteTo(buf)
-	return buf.Bytes()
+	bytes := make([]byte, 0, len(b.Name())+24)
+	bytes = b.Append(bytes)
+
+	return bytes
 }
 
 func (b *base) WriteTo(w io.Writer) (int64, error) {
-	buf := new(bytes.Buffer)
-	buf.WriteString(b.Name())
-	buf.WriteString(" ")
-	buf.WriteString(strconv.FormatFloat(b.Value(), 'f', -1, 64))
-	buf.WriteString(" ")
-	buf.WriteString(strconv.Itoa(int(b.Time())))
-	buf.WriteString("\n")
-	return buf.WriteTo(w)
+	n, err := w.Write(b.Point())
+	return int64(n), err
+}
+
+func (b *base) Append(bytes []byte) []byte {
+	bytes = append(bytes, b.Name()...)
+	bytes = append(bytes, ' ')
+	bytes = strconv.AppendFloat(bytes, b.Value(), 'f', -1, 64)
+	bytes = append(bytes, ' ')
+	bytes = strconv.AppendUint(bytes, uint64(b.Time()), 10)
+	bytes = append(bytes, '\n')
+
+	return bytes
 }
 
 // WithName sets the metric name for generator

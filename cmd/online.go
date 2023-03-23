@@ -75,7 +75,13 @@ func onlineGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(ggg))
 
-	write := func(gg generator.Generators) {
+	// preallocate buffers
+	buf := make([][]byte, len(ggg))
+	for i := 0; i < len(ggg); i++ {
+		buf[i] = make([]byte, 0, 256)
+	}
+
+	write := func(gg generator.Generators, buf *[]byte) {
 		defer wg.Done()
 		tick := time.Second
 		if !gg.Randomized() {
@@ -88,7 +94,7 @@ func onlineGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
 			case t := <-ticker.C:
 				ctxTimeout, cancel := context.WithTimeout(ctx, tick)
 				defer cancel()
-				n, err := valid.WriteAllToWithContext(ctxTimeout, writer)
+				n, err := valid.WriteAllToWithContext(ctxTimeout, writer, buf)
 				if err != nil && !errors.Is(err, generator.ErrEmptyGens) {
 					errs <- fmt.Errorf("error while sending metrics, %d bytes sent: %w", n, err)
 					return
@@ -98,8 +104,8 @@ func onlineGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
 		}
 	}
 
-	for _, gg := range ggg {
-		go write(gg)
+	for i, gg := range ggg {
+		go write(gg, &buf[i])
 	}
 
 	wg.Wait()
