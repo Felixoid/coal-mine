@@ -75,10 +75,7 @@ func TestBaseRandomizeStart(t *testing.T) {
 }
 
 func TestBasePoint(t *testing.T) {
-	b := base{}
-	b.name = "metric.name"
-	b.value = 123.333
-	b.time = 13
+	b := base{name: "metric.name", value: 123.333, time: 13}
 	assert.Equal(t, []byte("metric.name 123.333 13\n"), b.Point())
 }
 
@@ -87,5 +84,12 @@ func TestBaseStop(t *testing.T) {
 	for _, stop := range []uint{1, 2, 34, 5, 6, 7} {
 		b.SetStop(stop)
 		assert.Equal(t, stop, b.stop)
+	}
+}
+
+func BenchmarkBasePoint(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		bs := base{name: "metric.name", value: 123.333, time: 13}
+		_ = bs.Point()
 	}
 }
