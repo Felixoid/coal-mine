@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -12,7 +15,7 @@ var metricsCmd = &cobra.Command{
 	Short: "Generate metrics list",
 	Long:  `The command generates metrics to stdout`,
 	PreRun: func(cmd *cobra.Command, args []string) {
-		bindCommonFlags(cmd)
+		bindMetricsFlags(cmd)
 
 		readConfig()
 		unmarshalConfig()
@@ -26,7 +29,7 @@ func init() {
 	f := metricsCmd.Flags()
 	f.SortFlags = false
 
-	commonFlags(metricsCmd)
+	metricsFlags(metricsCmd)
 }
 
 func metricsGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
@@ -38,6 +41,18 @@ func metricsGeneration(cmd *cobra.Command, args []string) (asyncErr error) {
 	if len(ggg) == 0 {
 		return nil
 	}
+
+	fmt.Print("# value=")
+	io.WriteString(os.Stdout, strconv.FormatFloat(config.Value, 'f', -1, 64))
+	fmt.Print(" dev=")
+	io.WriteString(os.Stdout, strconv.FormatFloat(config.Deviation, 'f', -1, 64))
+	fmt.Print(" from=")
+	fmt.Print(config.From)
+	fmt.Print(" until=")
+	fmt.Print(config.Until)
+	fmt.Print(" step=")
+	fmt.Print(config.Step)
+	fmt.Println()
 
 	for _, gg := range ggg {
 		for _, g := range gg.List() {
