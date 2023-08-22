@@ -25,7 +25,7 @@ type General struct {
 	Randomize   bool    `toml:"randomize" json:"randomize" comment:"randomize starting time with [0,step)"`
 	Value       float64 `toml:"value,omitempty" json:"value,omitempty" comment:"first value for all generators"`
 	Deviation   float64 `toml:"deviation,omitempty" json:"deviation,omitempty" comment:"deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous"`
-	Probability uint8
+	Probability uint8   `toml:"probability,omitempty" json:"probability,omitempty" comment:"probability of points to being sent. A valid value is [1,100]. It has randomized starting value, but is calculated as 'current + probability > 100', so has consistent behavior"`
 }
 
 // Custom is a config for a generators with special parameters. Is readed only from a config file.

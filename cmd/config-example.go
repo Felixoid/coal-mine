@@ -45,24 +45,26 @@ func printConfig(cmd *cobra.Command, args []string) error {
 		Name: "custom.random.generator{1..10}",
 		Type: "random",
 		General: General{
-			From:      "-2d",
-			Until:     "1d",
-			Step:      300,
-			Randomize: false,
-			Value:     1000,
-			Deviation: 123.456,
+			From:        "-2d",
+			Until:       "1d",
+			Step:        300,
+			Randomize:   false,
+			Value:       1000,
+			Deviation:   123.456,
+			Probability: 13,
 		},
 	})
 	config.Custom = append(config.Custom, Custom{
 		Name: "custom.counter.generator{1..10}",
 		Type: "counter",
 		General: General{
-			From:      "-2h",
-			Until:     "now",
-			Step:      10,
-			Randomize: true,
-			Value:     100,
-			Deviation: 123.456,
+			From:        "-2h",
+			Until:       "now",
+			Step:        10,
+			Randomize:   true,
+			Value:       100,
+			Deviation:   123.456,
+			Probability: 77,
 		},
 	})
 	encoder := toml.NewEncoder(buf).CompactComments(true).Indentation(" ").Order(toml.OrderPreserve)
