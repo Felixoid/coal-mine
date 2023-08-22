@@ -7,7 +7,7 @@ import (
 )
 
 func TestRandomNew(t *testing.T) {
-	c := NewRandom("metric.name", 12, 15, 1, false, 30, 0)
+	c, _ := NewRandom("metric.name", 12, 15, 1, false, 30, 0, 100)
 	expected := &Random{}
 	expected.base = base{
 		name:          "metric.name",
@@ -18,11 +18,12 @@ func TestRandomNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	assert.Equal(t, expected, c)
 	randomized := false
 	for i := 0; i < 100; i++ {
-		c = NewRandom("metric.name", 12, 15, 100, true, 30, 0)
+		c, _ = NewRandom("metric.name", 12, 15, 100, true, 30, 0, 100)
 		if c.Time() != 12 {
 			randomized = true
 			break

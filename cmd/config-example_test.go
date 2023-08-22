@@ -54,6 +54,8 @@ deviation = 15.15
  value = 1000.0
  # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
  deviation = 123.456
+ # probability of points to being sent. A valid value is [1,100]. It has randomized starting value, but is calculated as 'current + probability > 100', so has consistent behavior
+ probability = 13
 
 [[custom]]
  # names for generator, braces are expanded like in shell
@@ -72,6 +74,8 @@ deviation = 15.15
  value = 100.0
  # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
  deviation = 123.456
+ # probability of points to being sent. A valid value is [1,100]. It has randomized starting value, but is calculated as 'current + probability > 100', so has consistent behavior
+ probability = 77
 `
 	assert.Equal(t, body, buf.String())
 }

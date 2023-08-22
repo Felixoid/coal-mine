@@ -7,7 +7,7 @@ import (
 )
 
 func TestCounterNew(t *testing.T) {
-	c, e := NewCounter("metric.name", 12, 15, 1, false, 30, 0)
+	c, e := NewCounter("metric.name", 12, 15, 1, false, 30, 0, 100)
 	expected := &Counter{}
 	expected.base = base{
 		name:          "metric.name",
@@ -18,13 +18,14 @@ func TestCounterNew(t *testing.T) {
 		time:          12,
 		value:         30,
 		deviation:     0,
+		probability:   c.probability,
 	}
 	expected.increment = 30
 	assert.NoError(t, e)
 	assert.Equal(t, expected, c)
 	randomized := false
 	for i := 0; i < 100; i++ {
-		c, e = NewCounter("metric.name", 12, 15, 100, true, 30, 0)
+		c, e = NewCounter("metric.name", 12, 15, 100, true, 30, 0, 100)
 		if c.Time() != 12 {
 			randomized = true
 			break
@@ -33,15 +34,15 @@ func TestCounterNew(t *testing.T) {
 	assert.NoError(t, e)
 	assert.True(t, randomized)
 
-	c, e = NewCounter("metric.name", 12, 15, 1, false, -31, 30)
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -31, 30, 100)
 	assert.Nil(t, c)
 	assert.Error(t, e)
 
-	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 30)
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 30, 100)
 	assert.Nil(t, c)
 	assert.Error(t, e)
 
-	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 31)
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 31, 100)
 	assert.NoError(t, e)
 }
 
