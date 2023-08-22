@@ -16,8 +16,8 @@ type Counter struct {
 // Possibly it can randomize values around increment.
 // When deviation is set, it the next value won't be less then previous.
 func NewCounter(name string, start, stop, step uint, randomizeStart bool, value, deviation float64, probabilityStart uint8) (*Counter, error) {
-	if value < 0 && math.Abs(value) <= math.Abs(deviation) {
-		return nil, fmt.Errorf("%w: with negative value deviation must be greater than value", ErrNewCounter)
+	if value < 0 && math.Abs(deviation) <= math.Abs(value) {
+		return nil, fmt.Errorf("%w: with negative value deviation (%f) must be greater than value (%f)", ErrNewCounter, deviation, value)
 	}
 	if !probabilityIsCorrect(probabilityStart) {
 		return nil, ErrProbabilityStart
@@ -45,10 +45,11 @@ func (c *Counter) Next() error {
 	if err != nil {
 		return err
 	}
-	increment := c.increment
-	if c.Deviation() != 0 {
-		increment = c.increment + c.Deviation()*(1-rand.Float64()*2)
+	if c.Deviation() == 0 && 0 < c.increment {
+		c.value += c.increment
+		return nil
 	}
+	increment := c.increment + c.Deviation()*(1-rand.Float64()*2)
 	if 0 < increment {
 		c.value += increment
 	}

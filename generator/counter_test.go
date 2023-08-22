@@ -34,9 +34,16 @@ func TestCounterNew(t *testing.T) {
 	assert.NoError(t, e)
 	assert.True(t, randomized)
 
-	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 31, 100)
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -31, 30, 100)
 	assert.Nil(t, c)
 	assert.Error(t, e)
+
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 30, 100)
+	assert.Nil(t, c)
+	assert.Error(t, e)
+
+	c, e = NewCounter("metric.name", 12, 15, 1, false, -30, 31, 100)
+	assert.NoError(t, e)
 }
 
 func TestCounterNext(t *testing.T) {
@@ -70,11 +77,42 @@ func TestCounterNext(t *testing.T) {
 	assert.Equal(t, uint(66), c.time)
 	assert.Equal(t, float64(56), c.value)
 
-	// negative increment
+	// negative increment and unsignificant deviation
 	c.time = 12
 	c.step = 1
 	c.stop = 65
 	c.value = 2
+	c.deviation = 0.05
+	c.increment = -0.1
+	for i := 0; i < 100; i++ {
+		if err = c.Next(); err != nil {
+			break
+		}
+	}
+	assert.Equal(t, uint(66), c.time)
+	assert.Equal(t, float64(2), c.value)
+
+	// negative increment and significant deviation
+	c.time = 12
+	c.step = 1
+	c.stop = 65
+	c.value = 2
+	c.deviation = 0.11
+	c.increment = -0.1
+	for i := 0; i < 100; i++ {
+		if err = c.Next(); err != nil {
+			break
+		}
+	}
+	assert.Equal(t, uint(66), c.time)
+	assert.True(t, 2 < c.value && c.value <= 7)
+
+	// negative increment and zero deviation
+	c.time = 12
+	c.step = 1
+	c.stop = 65
+	c.value = 2
+	c.deviation = 0
 	c.increment = -0.1
 	for i := 0; i < 100; i++ {
 		if err = c.Next(); err != nil {
