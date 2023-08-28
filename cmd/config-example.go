@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -67,7 +67,7 @@ func printConfig(cmd *cobra.Command, args []string) error {
 			Probability: 77,
 		},
 	})
-	encoder := toml.NewEncoder(buf).CompactComments(true).Indentation(" ").Order(toml.OrderPreserve)
+	encoder := toml.NewEncoder(buf).SetIndentTables(true).SetIndentSymbol(" ")
 	encoder.Encode(config)
 	fmt.Fprint(cmd.OutOrStdout(), buf.String())
 	return nil

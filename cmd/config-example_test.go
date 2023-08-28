@@ -14,20 +14,20 @@ func TestConfigExample(t *testing.T) {
 	err := rootCmd.Execute()
 	assert.NoError(t, err)
 	body := `# carbon-server address or '-' for STDOUT, should be set as '-', 'tcp://server:port' or 'udp://server:port'
-carbon = ""
+carbon = ''
 # names for constant generators, braces are expanded like in shell
-# values are generated with deviation around starting value
-const = ["metric.const.example1", "metric.const.example{2..5}"]
+#  values are generated with deviation around starting value
+const = ['metric.const.example1', 'metric.const.example{2..5}']
 # names for counter generators, braces are expanded like in shell
-# values are incremented by value with deviation, but not less then the previous value
-counter = ["metric.counter.example1", "metric.counter.example{2..5}"]
+#  values are incremented by value with deviation, but not less then the previous value
+counter = ['metric.counter.example1', 'metric.counter.example{2..5}']
 # names for random generators, braces are expanded like in shell
-# values are generated with deviation around the previous value
-random = ["metric.random.example{1,{2..5},.subdir}"]
+#  values are generated with deviation around the previous value
+random = ['metric.random.example{1,{2..5},.subdir}']
 # from in graphite-web format, the local TZ is used
-from = "-2d"
+from = '-2d'
 # until in graphite-web format, the local TZ is used
-until = "now"
+until = 'now'
 # step in seconds
 step = 120
 # randomize starting time with [0,step)
@@ -37,15 +37,16 @@ value = 333.0
 # deviation of the values, const will be generated around, counter will add [0,value+deviation), random will calculate next value around previous
 deviation = 15.15
 
+# generators with custom parameters can be specified separately
 [[custom]]
  # names for generator, braces are expanded like in shell
- name = "custom.random.generator{1..10}"
+ name = 'custom.random.generator{1..10}'
  # type of generator
- type = "random"
+ type = 'random'
  # from in graphite-web format, the local TZ is used
- from = "-2d"
+ from = '-2d'
  # until in graphite-web format, the local TZ is used
- until = "1d"
+ until = '1d'
  # step in seconds
  step = 300
  # randomize starting time with [0,step)
@@ -59,13 +60,13 @@ deviation = 15.15
 
 [[custom]]
  # names for generator, braces are expanded like in shell
- name = "custom.counter.generator{1..10}"
+ name = 'custom.counter.generator{1..10}'
  # type of generator
- type = "counter"
+ type = 'counter'
  # from in graphite-web format, the local TZ is used
- from = "-2h"
+ from = '-2h'
  # until in graphite-web format, the local TZ is used
- until = "now"
+ until = 'now'
  # step in seconds
  step = 10
  # randomize starting time with [0,step)
