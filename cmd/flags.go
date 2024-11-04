@@ -15,6 +15,7 @@ func commonFlags(cmd *cobra.Command) {
 	f.Bool("randomize", viper.GetBool("randomize"), "toggle if starting point of generators should be randomized")
 	f.Float64("value", viper.GetFloat64("value"), "starting value for generators")
 	f.Float64("deviation", viper.GetFloat64("deviation"), "deviation for the next point in generator")
+	f.Uint8("probability", uint8(viper.GetUint("probability")), "probability of the points being sent, values in [1,100]")
 	f.Uint("step", viper.GetUint("step"), "generators interval in seconds")
 }
 

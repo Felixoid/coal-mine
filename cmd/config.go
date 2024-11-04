@@ -150,6 +150,7 @@ func setDefaultConfig() {
 	viper.SetDefault("randomize", false)
 	viper.SetDefault("value", 10)
 	viper.SetDefault("deviation", 5)
+	viper.SetDefault("probability", 100)
 	viper.SetDefault("generators", []Custom{})
 }
 
