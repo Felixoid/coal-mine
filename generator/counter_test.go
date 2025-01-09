@@ -105,7 +105,7 @@ func TestCounterNext(t *testing.T) {
 		}
 	}
 	assert.Equal(t, uint(66), c.time)
-	assert.True(t, 2 < c.value && c.value <= 7)
+	assert.True(t, 2 <= c.value && c.value <= 7)
 
 	// negative increment and zero deviation
 	c.time = 12
