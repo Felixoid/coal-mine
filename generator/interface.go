@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 
 	"github.com/Felixoid/braxpansion"
 )
@@ -139,11 +140,60 @@ func (gg *Generators) Step() uint {
 	return gg.step
 }
 
+var udpMaxPayload int
+
+// tcp has MTU negotiation, but UDP fails with "too big message", that's why here's a poor people MTU calculation
+func getUDPSize(conn *net.UDPConn) (int, error) {
+	if udpMaxPayload != 0 {
+		return udpMaxPayload, nil
+	}
+	localAddr := conn.LocalAddr().(*net.UDPAddr).IP
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get network interfaces: %v", err)
+	}
+	for _, iface := range interfaces {
+		addrs, _ := iface.Addrs()
+		for _, addr := range addrs {
+			if ipNet, ok := addr.(*net.IPNet); ok && ipNet.IP.Equal(localAddr) {
+				// Found the matching interface
+				mtu := iface.MTU
+				ipHeaderSize := 20 // Assume IPv4 by default
+				if localAddr.To4() == nil {
+					ipHeaderSize = 40 // IPv6
+				}
+				udpMaxPayload = mtu - ipHeaderSize - 8 // Subtract IP and UDP header sizes
+				return udpMaxPayload, nil
+			}
+		}
+	}
+
+	return 0, fmt.Errorf("no matching network interface found for IP: %v", localAddr)
+
+}
+
 // WriteTo writes point's []byte representation to io.Writer
 func (gg *Generators) WriteTo(w io.Writer) (n int64, err error) {
 	var add int64
+	buf := new(bytes.Buffer)
 	for _, g := range gg.gens {
-		add, err = g.WriteTo(w)
+		g.WriteTo(buf)
+	}
+	if udpConn, ok := w.(*net.UDPConn); ok {
+		payloadSize, err := getUDPSize(udpConn)
+		if err != nil {
+			return n, err
+		}
+		for buf.Len() > 0 {
+			chunk := min(buf.Len(), payloadSize)
+			add, err := w.Write(buf.Bytes()[:chunk])
+			n += int64(add)
+			if err != nil {
+				return n, err
+			}
+		}
+	} else {
+		add, err = buf.WriteTo(w)
 		n += add
 		if err != nil {
 			return
@@ -154,21 +204,12 @@ func (gg *Generators) WriteTo(w io.Writer) (n int64, err error) {
 
 // WriteAllTo writes all points for Generators to io.Writer
 func (gg *Generators) WriteAllTo(w io.Writer) (int64, error) {
-	var add, n int64
-	buf := new(bytes.Buffer)
-	wr := func() error {
-		var err error
-		gg.WriteTo(buf)
-		add, err = buf.WriteTo(w)
-		n += add
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	var n int64
 	var err error
 	for ; err == nil; err = gg.Next() {
-		if err := wr(); err != nil {
+		add, err := gg.WriteTo(w)
+		n += add
+		if err != nil {
 			return n, err
 		}
 	}
@@ -180,17 +221,11 @@ func (gg *Generators) WriteAllTo(w io.Writer) (int64, error) {
 
 // WriteAllToWithContext writes all points, but may be stopped by the passing a struct to a stop channel
 func (gg *Generators) WriteAllToWithContext(ctx context.Context, w io.Writer) (int64, error) {
-	var add, n int64
-	buf := new(bytes.Buffer)
+	var n int64
 	wr := func() error {
-		var err error
-		gg.WriteTo(buf)
-		add, err = buf.WriteTo(w)
+		add, err := gg.WriteTo(w)
 		n += add
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	}
 	var err error
 	for ; err == nil; err = gg.Next() {
